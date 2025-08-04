@@ -4,28 +4,33 @@ from testdata import load_data
 import numpy as np
 from util import *
 
-# バッチ処理に対応してみる（めっちゃ早くなった）
+# 動作する。時間かかるけど10000回くらい回したら割と改善
 class TwoLayerNN:
     def __init__(self, W1, h1, W2):
         self.W1 = W1
         self.h1 = h1
         self.W2 = W2
     
-    def forward(self, X):
-        return self._forward(X, self.W1, self.W2)
+    def forward(self, x):
+        return self._forward(x, self.W1, self.W2)
     
-    def _forward(self, X, W1, W2):
-        l1 = self.h1(X @ W1)
+    def _forward(self, x, W1, W2):
+        l1 = self.h1(x @ W1)
         # l2 = softmax(l1 @ W2)
         l2 = sigmoid_func(l1 @ W2) # 回帰なのでシグモイドにした
         return l2
+
+    def _error(self, x, t, W1, W2):
+        return mean_squared_error(self._forward(x, W1, W2), t)
 
     def loss(self, X, T):
         return self._loss(X, T, self.W1, self.W2)
 
     def _loss(self, X, T, W1, W2):
-        Y = self._forward(X, W1, W2)[:, 0]
-        return mean_squared_error(Y, T)
+        tmp = np.zeros(len(T))
+        for i in range(len(T)):
+            tmp[i] = self._error(X[i], T[i], W1, W2)
+        return np.average(tmp)
 
     def grad(self, W1, W2, X, T):
         f1 = lambda W: self._loss(X, T, W, W2)
@@ -57,7 +62,7 @@ class TwoLayerNN:
             g1, g2 = self.grad(self.W1, self.W2, X, T)
             self.W1 -= lr * g1
             self.W2 -= lr * g2
-            if i % 1000 == 0:
+            if i % 100 == 0:
                 print(f"loss: {self.loss(X, T)} (step = {i})")
 
     def accuracy(self, X, T):
@@ -71,8 +76,8 @@ class TwoLayerNN:
 dataset = load_data()
 x_train = dataset['x_train']
 t_train = dataset['t_train']
-W1 = np.random.randn(3, 20) 
-W2 = np.random.randn(20, 1) 
+W1 = np.random.randn(3, 10) 
+W2 = np.random.randn(10, 1) 
 h1 = relu_func
 
 nn = TwoLayerNN(W1, h1, W2)
@@ -80,7 +85,7 @@ nn = TwoLayerNN(W1, h1, W2)
 print(f"loss: {nn.loss(x_train, t_train)}")
 print(f"accuracy: {nn.accuracy(x_train, t_train)}")
 # print(np.transpose([nn.forward(x_train)[:, 0], t_train]))
-nn.grad_descent(x_train, t_train, lr=0.1, step_num=50000)
+nn.grad_descent(x_train, t_train, lr=0.1, step_num=10000)
 print(f"loss: {nn.loss(x_train, t_train)}")
 print(f"accuracy: {nn.accuracy(x_train, t_train)}")
 # print(np.transpose([nn.forward(x_train)[:, 0], t_train]))

@@ -7,7 +7,7 @@ def cross_entropy_error(y, t):
     return -np.sum(t * np.log(y + delta))
 
 def mean_squared_error(y, t):
-    return np.sum((y - t) ** 2) / 2
+    return np.mean((y - t) ** 2) / 2
 
 ### Gradients
 # f: W -> R (must be W.ndim <= 2)
@@ -57,5 +57,5 @@ def softmax(x: np.ndarray):
 if __name__ == '__main__':
     f = lambda W: (W * W).sum()
     W = np.float64([[1, 2], [3, 4]])
-    grad_descent(f, W, lr=0.03, step_num=1000)
+    grad_descent(f, W, lr=0.3, step_num=1000)
     print(W)

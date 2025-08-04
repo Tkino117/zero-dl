@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 import os
 import pickle
 
-save_file = './testdata.pkl'
+dataset_dir = os.path.dirname(os.path.abspath(__file__))
+save_file = dataset_dir + "/testdata.pkl"
+
 def make_data():
     x = np.random.rand(3 * 100).reshape(-1, 3) * 2 - 1
     t = np.array([1 if (xi**2).sum() > 1 else 0 for xi in x])
@@ -16,9 +18,6 @@ def make_data():
     with open(save_file, 'wb') as f:
         pickle.dump(dataset, f, -1)
         print("made data and dumpped!")
-    # ax = plt.axes(projection='3d')
-    # ax.scatter(x[:, 0], x[:, 1], x[:, 2], c=t)
-    # plt.show()
 
 def load_data():
     if not os.path.exists(save_file):
