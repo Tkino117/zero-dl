@@ -21,14 +21,12 @@ class NN:
         acc = self.losslayer.accuracy(X, T)
         return acc
 
-    def train(self, X, T, lr=0.01, step_num=1000):
+    def train(self, X, T, lr=0.01, step_num=1):
         for i in range(step_num):
             loss = self._train(X, T, lr)
-            # if i % 10 == 0:
-                # print(f"loss: {loss} (step={i})")
 
     def _train(self, X, T, lr=0.01):
-        # 純伝搬
+        # 順伝搬
         loss = self.loss(X, T)
 
         # 逆伝搬
