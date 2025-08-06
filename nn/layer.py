@@ -10,10 +10,14 @@ class Affine:
 
     def forward(self, X):
         self.X = X
+        # print(f"class(X, W, b): {type(X)} {type(self.W)} {type(self.b)}")
+        # print(f"size(X, W, b): {X.shape} {self.W.shape} {self.b.shape}")
         return X @ self.W + self.b
 
     def backward(self, dout):
-        dX = self.W.T @ dout
+        # print(f"class(W, dout): {type(self.W)} {type(dout)}")
+        # print(f"size(W, dout): {self.W.shape} {dout.shape}")
+        dX = dout @ self.W.T
         self.dW = self.X.T @ dout
         self.db = np.sum(dout, axis=0)
         return dX
@@ -39,7 +43,8 @@ class Relu:
 
     def forward(self, X):
         self.mask = (X <= 0)
-        out = X.copy()[self.mask] = 0
+        out = X.copy()
+        out[self.mask] = 0
         return out
 
     def backward(self, dout):
@@ -51,13 +56,25 @@ class SoftmaxWithLoss:
         self.Y = None
         self.T = None
 
-    def forward(self, X, T):
+    def _softmax(self, X):
         c = np.max(X, axis=1, keepdims=True)
         tmp = np.exp(X - c)
-        self.Y = tmp / np.sum(tmp, axis=1, keepdims=True) 
+        return tmp / np.sum(tmp, axis=1, keepdims=True) 
+
+    def _loss(self, Y, T):
+        return -np.sum(T * np.log(Y + 1e-7)) / len(T)
+
+    def forward(self, X, T):
+        self.Y = self._softmax(X)
         self.T = T
-        loss = -np.sum(T * np.log(self.Y * 1e-7)) / len(T)
-        return loss
+        return self._loss(self.Y, self.T)
+
+    def accuracy(self, X, T):
+        Y = self._softmax(X)
+        predict = np.argmax(Y, axis=1)
+        true = np.argmax(T, axis=1)
+        matches = predict == true
+        return np.mean(matches)
 
     def backward(self, dout=1):
         return (self.Y - self.T) / len(self.T) 
